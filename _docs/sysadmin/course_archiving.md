@@ -17,7 +17,7 @@ still a work in progress._
     ```
 
     Launch postgres:
- 
+
     ```
     psql
     ```
@@ -41,7 +41,7 @@ still a work in progress._
    select * from courses where semester='s18';
    ```
 
-   **status = 1**  
+   **status = 1**
    The course is active.  All student users
    assigned to a non-NULL registration section, and all limited access
    graders, full access graders, and instructors can view the course.
@@ -51,7 +51,7 @@ still a work in progress._
    that course can view the course.  _TODO: We intend for this access
    to be read only, but that is currently not implemented._
 
-   Other status codes may be defined in the future.  
+   Other status codes may be defined in the future.
 
 
 3. Change the status values as desired, for example:
@@ -125,7 +125,65 @@ not be a full clone with complete repository history._
 /var/local/submitty/courses/<SEMESTER>/<COURSE>/checkout
 ```
 
-Finally you may want to make a dump of the current contents of the database.  
+Finally you may want to make a dump of the current contents of the database.
 
 _TODO: Add instructions... _
+
+### Archive Database Data
+
+#### Dump Course Database
+
+1. Switch to `postgres` user:
+
+    ```
+    sudo su postgres
+    ```
+
+2. Use `pg_dump` to dump your course database with data.  We are writing to `/tmp` to ensure that `postgres` has write permissions.
+
+    ```
+    pg_dump --create --clean --if-exists submitty_s18_csci1100 > /tmp/s18_csci1100.dbdump
+    ```
+
+3. Change ownership of dump file and move it out of `/tmp`.
+
+#### Dump Course Related Data From Master Database
+
+1. Switch to `postgres` user (if not already `postgres` from previous section):
+
+   ```
+   sudo su postgres
+   ```
+
+   Launch postgres:
+
+   ```
+   psql
+   ```
+
+   And connect to the master Submitty database:
+
+   ```
+   \c submitty
+   ```
+
+2. Dump courses_users table.  We are writing to `/tmp` to ensure that `postgres` has write permissions.
+
+   ```sql
+   copy courses_users to '/tmp/s18_csci1100.courses_users' (select * from courses_users where semester='s18' and course='csci1100');
+   ```
+
+3. Dump registration_sections information.
+
+   ```sql
+   copy courses_registration_sections to '/tmp/s18_csci1100.registration_sections' (select * from courses_registration_sections where semester='s18' and course='csci1100');
+   ```
+
+4. Dump users table.
+
+   ```sql
+   copy users to 'tmp/s18_csci1100.users' (select u.* from users as u left outer join courses_users as cu on u.user_id=cu.user_id where cu.semester='s18' and cu.course='csci1100');
+   ```
+
+5. Change ownership of dump files and move them out of `/tmp`.
 
