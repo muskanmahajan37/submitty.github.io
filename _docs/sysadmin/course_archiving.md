@@ -31,13 +31,13 @@ still a work in progress._
 
 2. View all of the courses and their current status:
 
-   ```
+   ```sql
    select * from courses;
    ```
 
    or:
 
-   ```
+   ```sql
    select * from courses where semester='s18';
    ```
 
@@ -56,13 +56,13 @@ still a work in progress._
 
 3. Change the status values as desired, for example:
 
-   ```
+   ```sql
    update courses set status=2 where semester='s18' and course='csci1100';
    ```
 
    or archive all courses for the semester:
 
-   ```
+   ```sql
    update courses set status=2 where semester='s18';
    ```
 
@@ -82,7 +82,7 @@ you consider switching the group for your course to limit access to
 the files of past semesters to the current instructors only.
 
 ```
-chmod ugo-w /var/local/submitty/courses/<SEMESTER>/<COURSE>
+chmod -R ugo-w /var/local/submitty/courses/<SEMESTER>/<COURSE>
 ```
 
 Note that both of these changes can be nontrivial to revert (since the
@@ -127,25 +127,29 @@ not be a full clone with complete repository history._
 
 Finally you may want to make a dump of the current contents of the database.
 
-_TODO: Add instructions... _
-
 ### Archive Database Data
+These examples assume that the course is called "csci1100" and was taught in Spring 2018 ("s18").  The sysadmin's linux account is `sysadmin` and the archive folder exists `/var/local/submitty/archives`.
 
 #### Dump Course Database
 
 1. Switch to `postgres` user:
 
-    ```
-    sudo su postgres
-    ```
+   ```
+   sudo su postgres
+   ```
 
 2. Use `pg_dump` to dump your course database with data.  We are writing to `/tmp` to ensure that `postgres` has write permissions.
 
-    ```
-    pg_dump --create --clean --if-exists submitty_s18_csci1100 > /tmp/s18_csci1100.dbdump
-    ```
+   ```
+   pg_dump --create --clean --if-exists submitty_s18_csci1100 > /tmp/s18_csci1100.dbdump
+   ```
 
-3. Change ownership of dump file and move it out of `/tmp`.
+3. IMPORTANT: Change ownership of dump file and **move** it out of `/tmp`.
+
+   ```
+   sudo chown sysadmin:sysadmin /tmp/s18_csci1100.dbdump
+   mv /tmp/s18_csci1100.dbdump /var/local/submitty/archives
+   ```
 
 #### Dump Course Related Data From Master Database
 
@@ -155,7 +159,7 @@ _TODO: Add instructions... _
    sudo su postgres
    ```
 
-   Launch postgres:
+   Launch Postgres:
 
    ```
    psql
@@ -167,23 +171,27 @@ _TODO: Add instructions... _
    \c submitty
    ```
 
-2. Dump courses_users table.  We are writing to `/tmp` to ensure that `postgres` has write permissions.
+2. Dump `courses_users` data.  We are writing to `/tmp` to ensure that `postgres` has write permissions.
 
    ```sql
    copy courses_users to '/tmp/s18_csci1100.courses_users' (select * from courses_users where semester='s18' and course='csci1100');
    ```
 
-3. Dump registration_sections information.
+3. Dump `registration_sections` data.
 
    ```sql
    copy courses_registration_sections to '/tmp/s18_csci1100.registration_sections' (select * from courses_registration_sections where semester='s18' and course='csci1100');
    ```
 
-4. Dump users table.
+4. Dump `users` data.
 
    ```sql
    copy users to 'tmp/s18_csci1100.users' (select u.* from users as u left outer join courses_users as cu on u.user_id=cu.user_id where cu.semester='s18' and cu.course='csci1100');
    ```
 
-5. Change ownership of dump files and move them out of `/tmp`.
+5. IMPORTANT: Change ownership of dump file and **move** it out of `/tmp`.
 
+   ```
+   sudo chown sysadmin:sysadmin /tmp/s18_csci1100.*
+   mv /tmp/s18_csci1100.* /var/local/submitty/archives
+   ```
