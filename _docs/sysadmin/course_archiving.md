@@ -128,7 +128,7 @@ not be a full clone with complete repository history._
 Finally you may want to make a dump of the current contents of the database.
 
 ### Archive Database Data
-These examples assume that the course is called "csci1100" and was taught in Spring 2018 ("s18").  The sysadmin's linux account is `sysadmin` and the archive folder exists `/var/local/submitty/archives`.
+These examples assume that the course is called "csci1100" and was taught in Spring 2018 ("s18").
 
 #### Dump Course Database
 
@@ -144,54 +144,135 @@ These examples assume that the course is called "csci1100" and was taught in Spr
    pg_dump --create --clean --if-exists submitty_s18_csci1100 > /tmp/s18_csci1100.dbdump
    ```
 
-3. IMPORTANT: Change ownership of dump file and **move** it out of `/tmp`.
+3. IMPORTANT: **Move** file out of `/tmp` to your course's data folder.
+   - You may need to exit from the `postgres` user.
 
-   ```
-   sudo chown sysadmin:sysadmin /tmp/s18_csci1100.dbdump
-   mv /tmp/s18_csci1100.dbdump /var/local/submitty/archives
-   ```
+      ```
+      exit
+      ```
+
+   - If you do not have a `db_backup` folder, create it.
+
+      ```
+      mkdir -p /var/local/submitty/courses/<SEMESTER>/<COURSE>/db_backups
+      ```
+
+   - Move `dbdump` file to the `db_backups` folder.  As the `dbdump` file is owned by `postgres` (needed to later restore this data), you'll need `root` to move it.
+
+      ```
+      sudo mv /tmp/s18_csci1100.dbdump /var/local/submitty/courses/<SEMESTER>/<COURSE>/db_backups
+      ```
 
 #### Dump Course Related Data From Master Database
 
-1. Switch to `postgres` user (if not already `postgres` from previous section):
+1. Switch to `postgres` user (if not already `postgres` from previous section).
 
    ```
    sudo su postgres
    ```
 
-   Launch Postgres:
+   Launch Postgres and connect to master Submitty database.
 
    ```
-   psql
-   ```
-
-   And connect to the master Submitty database:
-
-   ```
-   \c submitty
+   psql submitty
    ```
 
 2. Dump `courses_users` data.  We are writing to `/tmp` to ensure that `postgres` has write permissions.
 
    ```sql
-   copy courses_users to '/tmp/s18_csci1100.courses_users' (select * from courses_users where semester='s18' and course='csci1100');
+   copy (select * from courses_users where semester='s18' and course='csci1100') to '/tmp/s18_csci1100.courses_users';
    ```
 
-3. Dump `registration_sections` data.
+3. Dump `courses_registration_sections` data.
 
    ```sql
-   copy courses_registration_sections to '/tmp/s18_csci1100.registration_sections' (select * from courses_registration_sections where semester='s18' and course='csci1100');
+   copy (select * from courses_registration_sections where semester='s18' and course='csci1100') to '/tmp/s18_csci1100.registration_sections';
    ```
 
 4. Dump `users` data.
 
    ```sql
-   copy users to 'tmp/s18_csci1100.users' (select u.* from users as u left outer join courses_users as cu on u.user_id=cu.user_id where cu.semester='s18' and cu.course='csci1100');
+   copy (select u.* from users as u left outer join courses_users as cu on u.user_id=cu.user_id where cu.semester='s18' and cu.course='csci1100') to 'tmp/s18_csci1100.users';
    ```
 
-5. IMPORTANT: Change ownership of dump file and **move** it out of `/tmp`.
+5. Exit Postgres.
 
    ```
-   sudo chown sysadmin:sysadmin /tmp/s18_csci1100.*
-   mv /tmp/s18_csci1100.* /var/local/submitty/archives
+   \q
+   ```
+
+6. IMPORTANT: **Move** file out of `/tmp`.
+   - You may need to exit from the `postgres` user.
+
+      ```
+      exit
+      ```
+
+   - If you do not have a `db_backup` folder, create it.
+
+      ```
+      mkdir -p /var/local/submitty/courses/<SEMESTER>/<COURSE>/db_backups
+      ```
+
+   - Move the files to the `db_backups` folder.  As they are owned by `postgres` (needed to later restore this data), you'll need `root` to move it.
+
+      ```
+      sudo mv /tmp/s18_csci1100.* /var/local/submitty/courses/<SEMESTER>/<COURSE>/db_backups
+      ```
+
+### Restore Course Database Data
+These examples assume that the course is called "csci1100" and was taught in Spring 2018 ("s18").  The archive folder exists at `/var/local/submitty/archives`.
+
+#### Restore Course Database
+
+1. Switch to `postgres` user.
+
+   ```
+   sudo su postgres
+   ```
+
+2. Restore course database from dump.
+
+   ```
+   psql submitty_s18_csci1100 < /var/local/submitty/courses/<SEMESTER>/<COURSE>/db_backups/s18_csci1100.dbdump
+   ```
+
+#### Restore Course Data To Master Database
+
+1. Switch to `postgres` user (if not already `postgres` from previous section).
+
+   ```
+   sudo su postgres
+   ```
+
+   Launch Postgres and connect to master Submitty database.
+
+   ```
+   psql submitty
+   ```
+
+2. Deactivate trigger functions.
+
+   ```sql
+   SET session_replication_role = replica;
+   ```
+
+3. Restore `users` table data.  The use of a temp table ensures that a user in multiple courses does not trigger a primary key violation.
+
+   ```sql
+   create temp table tmp_users (like users);
+   copy tmp_users from '/var/local/submitty/courses/<SEMESTER>/<COURSE>/db_backups/s18_csci1100.users';
+   insert into users (select * from tmp_users) on conflict do nothing;
+   ```
+
+4. Restore `courses_users` data.
+
+   ```sql
+   copy courses_users from '/var/local/submitty/courses/<SEMESTER>/<COURSE>/db_backups/s18_csci1100.courses_users';
+   ```
+
+5. Restore `courses_registration_sections` data.
+
+   ```sql
+   copy courses_registration_sections from '/var/local/submitty/courses/<SEMESTER>/<COURSE>/db_backups/s18_csci1100.registration_sections'
    ```
