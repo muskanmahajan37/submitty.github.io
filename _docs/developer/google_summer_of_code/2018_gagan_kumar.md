@@ -3,6 +3,8 @@ title: Discussion Forum by Gagan Kumar
 category: Developer
 ---
 
+This is the final report for GSoC 2018 participant Gagan Kumar.
+
 ### [Submitty](http://submitty.org)
 *Homework Submission, Automated Grading, and TA grading system*
 
@@ -10,7 +12,7 @@ GitHub : [https://github.com/Submitty/Submitty](https://github.com/Submitty/Subm
 
 #### Google Summer of Code 2018 with Submitty
 
-Worked with Submitty on Discussion Forum under Google Summer of Code 2018. *Barbara Cutler*, *Master_Odin* and *Andrew Aikens* were officially assigned mentors who along with other Submitty members helped me at various stages such as design problems, code review and performance issues which made this journey easier for me.
+Worked with Submitty on Discussion Forum under Google Summer of Code 2018. *Barbara Cutler*, *Matthew Peveler (MasterOdin)* and *Andrew Aikens* were officially assigned mentors who along with other Submitty members helped me at various stages such as design problems, code review and performance issues which made this journey easier for me.
 
 #### What I learned
 

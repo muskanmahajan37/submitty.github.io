@@ -3,6 +3,10 @@ title: Instructor Interface for Plagiarism Detection by Tushar Gurjar
 category: Developer
 ---
 
+This is the final report for GSoC 2018 participant Gagan Kumar.
+
+-------------------
+
 [Submitty](http://submitty.org) is an open source programming
 assignment submission system from the 
 [Rensselaer Center for Open Source Software (RCOS)](https://rcos.io/), 

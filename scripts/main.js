@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Set up the collapse/expand feature of the arrows that sit next to
   // the sidebar links
-  for (element of document.getElementsByClassName('nav-arrow')) {
+  for (element of document.getElementsByClassName('nav-click')) {
     element.addEventListener('click', function(event) {
       event.stopPropagation();
       event.preventDefault();
@@ -39,5 +39,13 @@ window.addEventListener('load', function() {
 
   // Scroll the sidebar to the element marked as "current", useful if it's out of the browser's
   // viewport
-  document.getElementsByClassName('current')[0].scrollIntoView();
+  let current = document.getElementsByClassName('current')[0];
+  if (current) {
+    current.scrollIntoView();
+  }
+
+  document.getElementById('open-nav').addEventListener('click', function() {
+    document.body.classList.toggle('nav-open');
+  });
 });
+

@@ -81,11 +81,10 @@ A list of Submitty projects (some new, some in progress):
 
 We have a public [Slack server for Submitty Developers](https://join.slack.com/t/submitty/shared_invite/enQtMzE1NzgyMzUzNzI5LWNkNjUzYmZjOWJkNzdlM2QzNTM3MGYwNmQwMzQ3NjAwODUwYjI4MTRlZDNjZTFlMTk4ZjUzN2MxNzRjNDIwZTU).
 
-Please use the Slack server `#general` and `#summerofcode2019` channels
-for Submitty installation problems, general development questions, and
-feature design discussion.  We have a small administration team and
-very much appreciate the Submitty community working together to help new
-developers.
+Please use the Slack server `#general` channel for Submitty installation
+problems, general development questions, and feature design discussion.
+We have a small administration team and very much appreciate the Submitty
+community working together to help new developers.
 
 When asking for help on installation, please include your host
 operating system & version, and your versions of vagrant and virtual
