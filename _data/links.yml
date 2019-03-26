@@ -31,8 +31,8 @@
       link: create_edit_gradeable
     - name: Directory Structure
     - name: Assignment Configuration
-    - name: Facilitating Submission via GIT
-      link: managing_git
+    - name: Submission via Git
+      link: submission_via_git
     - name: Static Analysis
     - name: Tree Tool
     - name: Log Files
